@@ -1,0 +1,14 @@
+/node_modules
+
+# Ignore vendors, but include Hybrid Core and Composer-essentials
+/vendor/*/
+!/vendor/composer/
+!/vendor/autoload.php
+!/vendor/justintadlock/
+/vendor/composer/installers/
+
+/composer.lock
+
+# Ignore temporary files
+# For example language backups .pot~ and .po~
+*.*~
