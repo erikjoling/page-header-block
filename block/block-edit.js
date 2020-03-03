@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getImageSrc } from './functions-helpers.js';
+import { getImageSrc, getTheAuthor } from './functions-helpers.js';
 
 /**
  * WordPress dependencies
@@ -17,15 +17,27 @@ const { __ } = wp.i18n;
  */
 const editPageHeaderBlock = ( props ) => {
 	// Extract variables
-	const { media, attributes, setAttributes, className, isSelected } = props;
-	// const { backgroundImage, heading, content, buttonUrl, buttonText } = attributes;
+	const { title, author, media, attributes, setAttributes, className, isSelected } = props;
+	// const { featuredImage } = attributes;
+
+	// const [ authorId ] = useEntityProp( 'postType', 'post', 'author' );
+	// const author = useSelect(
+	// 	( select ) =>
+	// 		select( 'core' ).getEntityRecord( 'root', 'user', authorId ),
+	// 	[ authorId ]
+	// );
+	// return author ? (
+	// 	<address>{ sprintf( __( 'By %s' ), author.name ) }</address>
+	// ) : null;
 
 	// Internal variables
 	let featuredImageUrl = '';
+	let authorName = (author && author.hasOwnProperty('name')) ? author.name : '';
 	let style = {};
 
 	// Get the url of the featured image
 	featuredImageUrl = getImageSrc( media, 'max' );
+	// authorName 		 = getAuthorName( author );
 
 	// Set the backgroundImage style
 	style.backgroundImage = featuredImageUrl ? `url('${featuredImageUrl}')` : '';
@@ -34,7 +46,8 @@ const editPageHeaderBlock = ( props ) => {
 		<Fragment>
 			<div className={ `wp-block-page-header` } style={ style }>
 				<div className={ `wp-block-page-header__inner` }>
-					<h1>Test</h1>
+					<h1>{ title }</h1>
+					<span>{ authorName }</span>
 				</div>
 			</div>
 		</Fragment>
@@ -45,12 +58,17 @@ const editPageHeaderBlock = ( props ) => {
  * Grab something
  */
 export default withSelect( ( select ) => {
-	const { getMedia } = select( 'core' );
 	const { getEditedPostAttribute } = select( 'core/editor' );
+	const { getMedia } = select( 'core' );
 
-	const featuredImageId = getEditedPostAttribute( 'featured_media' );
+	const author = getTheAuthor( select );
+
+	const title 		  = getEditedPostAttribute( 'title' );
+	const featuredImage   = getEditedPostAttribute( 'featured_media' );
 
     return {
-    	media: featuredImageId ? getMedia( featuredImageId ) : null
+    	title: title,
+    	media: featuredImage ? getMedia( featuredImage ) : null,
+    	author : author
     };
 } )( editPageHeaderBlock );

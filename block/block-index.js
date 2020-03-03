@@ -18,7 +18,12 @@ export const settings = {
 
 	supports: {},
 
-	attributes: {},
+	attributes: {
+		// featuredImage: {
+		//     type: 'string',
+		//     default: ''
+		// },
+	},
 
 	edit: edit,
 };

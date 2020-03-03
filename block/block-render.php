@@ -29,12 +29,15 @@ function register_block() {
  */
 function render_block( $attributes = [] ) {
 
-	$page_title = apply_filters( 'hwl/page_header_block/page-title', get_the_title() );
+	$page_title = apply_filters( 'hwl/page_header_block/page_title', get_the_title() );
+	$image_id   = apply_filters( 'hwl/page_header_block/image_id', get_post_thumbnail_id() );
+	$image_size = apply_filters( 'hwl/page_header_block/image_size', 'large' );
+	$image_url  = ($image_id) ? \wp_get_attachment_image_url( $image_id, $image_size ) : false;
 
 	ob_start(); 
 
 	?>
-	<header class="page-header">
+	<header class="page-header" style="background-image: url(<?= $image_url ?>);">
 		<div class="page-header__inner">
 			<h1 class="page-title page-header__title"><?= $page_title ?></h1>
 		</div>

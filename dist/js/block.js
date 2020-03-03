@@ -119,17 +119,30 @@ var __ = wp.i18n.__;
 
 var editPageHeaderBlock = function editPageHeaderBlock(props) {
   // Extract variables
-  var media = props.media,
+  var title = props.title,
+      author = props.author,
+      media = props.media,
       attributes = props.attributes,
       setAttributes = props.setAttributes,
       className = props.className,
-      isSelected = props.isSelected; // const { backgroundImage, heading, content, buttonUrl, buttonText } = attributes;
+      isSelected = props.isSelected; // const { featuredImage } = attributes;
+  // const [ authorId ] = useEntityProp( 'postType', 'post', 'author' );
+  // const author = useSelect(
+  // 	( select ) =>
+  // 		select( 'core' ).getEntityRecord( 'root', 'user', authorId ),
+  // 	[ authorId ]
+  // );
+  // return author ? (
+  // 	<address>{ sprintf( __( 'By %s' ), author.name ) }</address>
+  // ) : null;
   // Internal variables
 
   var featuredImageUrl = '';
+  var authorName = author && author.hasOwnProperty('name') ? author.name : '';
   var style = {}; // Get the url of the featured image
 
-  featuredImageUrl = Object(_functions_helpers_js__WEBPACK_IMPORTED_MODULE_0__["getImageSrc"])(media, 'max'); // Set the backgroundImage style
+  featuredImageUrl = Object(_functions_helpers_js__WEBPACK_IMPORTED_MODULE_0__["getImageSrc"])(media, 'max'); // authorName 		 = getAuthorName( author );
+  // Set the backgroundImage style
 
   style.backgroundImage = featuredImageUrl ? "url('".concat(featuredImageUrl, "')") : '';
   return React.createElement(Fragment, null, React.createElement("div", {
@@ -137,7 +150,7 @@ var editPageHeaderBlock = function editPageHeaderBlock(props) {
     style: style
   }, React.createElement("div", {
     className: "wp-block-page-header__inner"
-  }, React.createElement("h1", null, "Test"))));
+  }, React.createElement("h1", null, title), React.createElement("span", null, authorName))));
 };
 /**
  * Grab something
@@ -145,15 +158,19 @@ var editPageHeaderBlock = function editPageHeaderBlock(props) {
 
 
 /* harmony default export */ __webpack_exports__["default"] = (withSelect(function (select) {
-  var _select = select('core'),
-      getMedia = _select.getMedia;
+  var _select = select('core/editor'),
+      getEditedPostAttribute = _select.getEditedPostAttribute;
 
-  var _select2 = select('core/editor'),
-      getEditedPostAttribute = _select2.getEditedPostAttribute;
+  var _select2 = select('core'),
+      getMedia = _select2.getMedia;
 
-  var featuredImageId = getEditedPostAttribute('featured_media');
+  var author = Object(_functions_helpers_js__WEBPACK_IMPORTED_MODULE_0__["getTheAuthor"])(select);
+  var title = getEditedPostAttribute('title');
+  var featuredImage = getEditedPostAttribute('featured_media');
   return {
-    media: featuredImageId ? getMedia(featuredImageId) : null
+    title: title,
+    media: featuredImage ? getMedia(featuredImage) : null,
+    author: author
   };
 })(editPageHeaderBlock));
 
@@ -185,7 +202,11 @@ var settings = {
   category: 'common',
   keywords: [__('Page Header')],
   supports: {},
-  attributes: {},
+  attributes: {// featuredImage: {
+    //     type: 'string',
+    //     default: ''
+    // },
+  },
   edit: _block_edit__WEBPACK_IMPORTED_MODULE_0__["default"]
 };
 
@@ -233,12 +254,15 @@ registerBlockType(_block_index__WEBPACK_IMPORTED_MODULE_0__["name"], _block_inde
 /*!************************************!*\
   !*** ./block/functions-helpers.js ***!
   \************************************/
-/*! exports provided: getImageSrc */
+/*! exports provided: getImageSrc, getTheAuthor, getTheDate, getTaxonomyList */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getImageSrc", function() { return getImageSrc; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTheAuthor", function() { return getTheAuthor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTheDate", function() { return getTheDate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTaxonomyList", function() { return getTaxonomyList; });
 /**
  * WordPress dependencies
  */
@@ -274,6 +298,68 @@ function getImageSrc(media, size) {
   }
 
   return imageSrc;
+}
+/**
+ * Get Post Author
+ *
+ * @param select - the select function
+ * @return string
+ */
+
+function getTheAuthor(select) {
+  var postAuthorId = select('core/editor').getEditedPostAttribute('author');
+  var authors = select('core').getAuthors();
+  var author;
+
+  for (var i = 0; i < authors.length; i++) {
+    if (authors[i].id === postAuthorId) {
+      author = authors[i];
+      break;
+    }
+  }
+
+  return author;
+}
+/**
+ * Get Post Published Date
+ *
+ * @param select - the select function
+ * @return string
+ */
+
+function getTheDate(select) {
+  var dateRaw = select('core/editor').getEditedPostAttribute('date');
+
+  var dateFormat = wp.date.__experimentalGetSettings().formats.date;
+
+  return dateRaw ? wp.date.format(dateFormat, dateRaw) : '';
+}
+/**
+ * Get Taxonomy List
+ *
+ * @param select - the select function
+ * @param attribute - the post attribute
+ * @param taxonomy - the taxonomy to query
+ * @return array
+ */
+
+function getTaxonomyList(select, attribute, taxonomy) {
+  var selectedTaxonomies = select('core/editor').getEditedPostAttribute(attribute);
+  var taxonomies = select('core').getEntityRecords('taxonomy', taxonomy, {
+    per_page: -1,
+    hide_empty: true
+  });
+  var taxList = [];
+
+  if (taxonomies) {
+    taxonomies.map(function (tax) {
+      if (selectedTaxonomies.includes(tax.id)) {
+        taxList.push(tax.name);
+      }
+    });
+  }
+
+  return taxList;
 }
 
 /***/ }),
